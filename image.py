@@ -1,3 +1,6 @@
+import base64
+from io import BytesIO
+
 import magic
 from fastapi import UploadFile, HTTPException
 from PIL import Image, UnidentifiedImageError
@@ -30,3 +33,8 @@ def process_image(file: UploadFile) -> Image.Image:
     except UnidentifiedImageError:
         raise HTTPException(400, 'Invalid image')
     return im
+
+def encode_image(im: Image.Image) -> str:
+    buf = BytesIO()
+    im.save(buf, 'png')
+    return base64.b64encode(buf.getvalue()).decode()
