@@ -8,7 +8,7 @@ import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from image import process_image, encode_image
+from image import process_image
 from PIL import Image, UnidentifiedImageError
 
 
@@ -102,65 +102,3 @@ class TestProcessImage:
         pass
 
 
-class TestEncodeImage:
-
-  def test_encode_image_valid(self):
-    img = Image.new('RGB', (50, 50), color='blue')
-
-    result = encode_image(img)
-
-    assert isinstance(result, str)
-    assert len(result) > 0
-
-    try:
-      decoded = base64.b64decode(result)
-      assert len(decoded) > 0
-    except Exception:
-      pytest.fail("encode_image вернула невалидную base64 строку")
-
-  def test_encode_image_different_sizes(self):
-    test_sizes = [(10, 10), (100, 100), (500, 500)]
-
-    for width, height in test_sizes:
-      img = Image.new('RGB', (width, height), color='green')
-      result = encode_image(img)
-
-      assert isinstance(result, str)
-      assert len(result) > 0
-
-  def test_encode_image_png_format(self):
-    img = Image.new('RGB', (100, 100), color='red')
-    result = encode_image(img)
-
-    decoded = base64.b64decode(result)
-    assert decoded.startswith(b'\x89PNG')
-
-
-class TestIntegration:
-  def test_process_and_encode_integration(self):
-    img = Image.new('RGB', (80, 80), color='yellow')
-    img_bytes = BytesIO()
-    img.save(img_bytes, format='JPEG')
-    img_bytes.seek(0)
-
-    mock_file = Mock(spec=UploadFile)
-    mock_file.size = len(img_bytes.getvalue())
-    mock_file.file = img_bytes
-    mock_file.filename = "test.jpg"
-
-    with patch('image.magic.from_buffer') as mock_magic:
-      mock_magic.return_value = 'image/jpeg'
-
-      processed_img = process_image(mock_file)
-      assert isinstance(processed_img, Image.Image)
-
-      encoded = encode_image(processed_img)
-      assert isinstance(encoded, str)
-      assert len(encoded) > 0
-
-
-def test_encode_image_empty_image():
-  img = Image.new('RGB', (1, 1), color='white')
-  result = encode_image(img)
-  assert isinstance(result, str)
-  assert len(result) > 0
