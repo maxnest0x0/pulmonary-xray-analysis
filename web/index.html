@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Классификация пневмонии</title>
+  <link rel="stylesheet" href="style/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="left-header"><a>Главная</a></div>
+        <nav class="right-header">
+          <ul>
+            <li><a>Контакты</a></li>
+            <li><a>О нас</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="main-content">
+
+        <!-- ЗОНА ЗАГРУЗКИ -->
+        <div class="file-upload" id="file-upload-zone">
+          <input type="file" id="file-upload" accept="image/jpeg,image/png,image/webp" hidden>
+          <div id="file-upload-btn" class="file-upload-btn-container">
+            <img src="images/173201-200.png" alt="">
+            <span>Выбрать файл</span>
+          </div>
+        </div> 
+
+        <!-- ПРЕВЬЮ -->
+        <div class="image-preview">
+          <img class="preview-img" src="" alt="Предпросмотр">
+          <button class="remove-preview">Удалить</button>
+        </div>
+
+        <!-- КНОПКА АНАЛИЗА -->
+        <div class="start-analysis">
+          <button id="analyze-btn">Начать диагностику</button>
+        </div>
+
+        <!-- ОШИБКА -->
+        <div id="error-message" role="alert" aria-live="polite"></div>
+        
+        <!-- ЛОАДЕР -->
+        <div id="loading" class="loading" style="display: none;">
+          <div class="spinner"></div>
+          <p>Идёт анализ изображения…</p>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ОВЕРЛЕЙ ДЛЯ DRAG & DROP -->
+  <div id="drop-overlay">
+    <div id="drop-overlay-inner">
+      <h3>Отпустите файл здесь</h3>
+      <p>Поддерживается только изображение</p>
+    </div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО С РЕЗУЛЬТАТОМ -->
+  <div id="result-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Диагностика завершена</h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="modal-result-text">
+          <!-- сюда будет текст -->
+        </div>
+        <div id="modal-heatmap">
+          <img class="heat-map-img" src="images/dataset-card.png" alt="Тепловая карта">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script/script.js"></script>
+</body>
+</html>
