@@ -23,9 +23,8 @@ class HeatmapPoint(NamedTuple):
 class AnalysisResult(BaseModel):
     diagnosis: Diagnosis
     probabilities: dict[Diagnosis, NormFloat]
-    heatmap_image: HeatmapImage
-    heatmap_points: list[HeatmapPoint]
+    heatmap_image: HeatmapImage | None
+    heatmap_points: list[HeatmapPoint] | None
     base_model_name: str
-    dataset_name: str
     processing_time: float
     processing_device: str

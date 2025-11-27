@@ -4,13 +4,22 @@ import torchxrayvision as xrv
 import torch.nn.functional as F
 from PIL import Image
 
-from cam_and_viz import compute_gradcam, show_imgs, resize_cam
-from image_transfroms import val_transform  
-from hooks import ActivationHook, GradientHook
+from image import GrayscaleImage
+from schemas import Diagnosis
+from .cam_and_viz import compute_gradcam, show_imgs, resize_cam
+from .image_transfroms import val_transform  
+from .hooks import ActivationHook, GradientHook
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-CLASS_NAMES = ["BACTERIA","NORMAL","VIRUS"]
+CLASS_NAMES = [Diagnosis.BACTERIAL, Diagnosis.NORMAL, Diagnosis.VIRAL]
 
+# workaround for my old laptop
+if DEVICE.type == 'cpu':
+    torch.backends.mkldnn.set_flags(_enabled=False)
+    torch.backends.nnpack.set_flags(_enabled=False)
+
+# suppress warning
+xrv.utils.warning_log['norm_check'] = True
 
 def load_trained_model(weights_path: str = "best_model.pth",
                        device: torch.device = DEVICE):
@@ -48,12 +57,10 @@ def prepare_model_for_viz_and_predict(weights_path: str = "best_model.pth",
     return model, hooks
 
 
-def run_model_with_features(image_path: str,
+def run_model_with_features(img: GrayscaleImage,
                                 model,
                                 hooks: dict,
                                 device: torch.device = DEVICE):
-
-    img = Image.open(image_path).convert("L")
     tensor = val_transform(img)
     tensor = tensor.unsqueeze(0).to(device)       
     
@@ -61,11 +68,12 @@ def run_model_with_features(image_path: str,
 
     logits = model(tensor)              
     probs = F.softmax(logits, dim=1)
+    class_probs = dict(zip(CLASS_NAMES, probs[0].tolist()))
 
     pred_idx = int(probs.argmax())
     pred_class = CLASS_NAMES[pred_idx]
 
-    if pred_idx != 1:
+    if pred_class != Diagnosis.NORMAL:
         score = logits[0, pred_idx]
         score.backward()
 
@@ -74,8 +82,9 @@ def run_model_with_features(image_path: str,
 
         cam = compute_gradcam(feature_maps, gradients)
 
-        H, W = img.height, img.width
-        cam_resized = resize_cam(cam, target_size=(H, W))
-        show_imgs(image_path, cam_resized, pred_class)
-    return pred_class
+        cam_resized = resize_cam(cam, target_size=img.shape)
+        cam_np = cam_resized.detach().cpu().numpy()
+
+        return pred_class, class_probs, cam_np
+    return pred_class, class_probs, None
 
