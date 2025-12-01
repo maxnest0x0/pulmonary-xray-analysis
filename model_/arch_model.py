@@ -13,11 +13,6 @@ from .hooks import ActivationHook, GradientHook
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 CLASS_NAMES = [Diagnosis.BACTERIAL, Diagnosis.NORMAL, Diagnosis.VIRAL]
 
-# workaround for my old laptop
-if DEVICE.type == 'cpu':
-    torch.backends.mkldnn.set_flags(_enabled=False)
-    torch.backends.nnpack.set_flags(_enabled=False)
-
 # suppress warning
 xrv.utils.warning_log['norm_check'] = True
 
