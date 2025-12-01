@@ -2,6 +2,7 @@ import time
 
 import uvicorn
 from fastapi import FastAPI, UploadFile
+from fastapi.staticfiles import StaticFiles
 
 from image import process_image, prepare_image, encode_image
 from heatmap import make_example_heatmap, apply_threshold, render_heatmap, dense_to_sparse
@@ -41,6 +42,8 @@ def analyze(image: UploadFile) -> AnalysisResult:
         processing_time=time.time() - start_time,
         processing_device=DEVICE.type,
     )
+
+app.mount('/', StaticFiles(directory='web', html=True))
 
 if __name__ == '__main__':
     uvicorn.run(app, host='0.0.0.0', port=8000)

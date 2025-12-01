@@ -83,7 +83,12 @@ document.addEventListener('DOMContentLoaded', () => {
         analyzeBtn.textContent = 'Анализ...';
         document.getElementById('loading').style.display = 'block';
 
-        setTimeout(() => {
+        const data = new FormData();
+        data.append('image', fileInput.files[0]);
+        fetch('/api/analyze', {
+            method: 'POST',
+            body: data
+        }).then(res => res.json()).then(res => {
             document.getElementById('loading').style.display = 'none';
             analyzeBtn.disabled = false;
             analyzeBtn.textContent = 'Начать диагностику';
@@ -91,15 +96,41 @@ document.addEventListener('DOMContentLoaded', () => {
             // Открываем модальное окно
             const modal = document.getElementById('result-modal');
             const modalText = document.getElementById('modal-result-text');
+            const heatmapImg = document.getElementById('heatmap-image');
 
-            modalText.innerHTML = `
-      <h3>Всё в норме!</h3>
-      <p><strong>Вердикт:</strong> Признаков пневмонии не обнаружено.</p>
-      <p><strong>Рекомендация:</strong> Дополнительное обследование не требуется. Можно быть спокойным!</p>
-    `;
+            switch (res.diagnosis) {
+                case 'normal':
+                    modalText.innerHTML = `
+                        <h3>Всё в норме!</h3>
+                        <p><strong>Вердикт:</strong> Признаков пневмонии не обнаружено.</p>
+                        <p><strong>Рекомендация:</strong> Дополнительное обследование не требуется. Можно быть спокойным!</p>
+                    `;
+                    break;
+                case 'viral_pneumonia':
+                    modalText.innerHTML = `
+                        <h3>Вирусная пневмония</h3>
+                        <p><strong>Вердикт:</strong> Обнаружена вирусная пневмония.</p>
+                        <p><strong>Рекомендация:</strong> ...</p>
+                    `;
+                    break;
+                case 'bacterial_pneumonia':
+                    modalText.innerHTML = `
+                        <h3>Бактериальная пневмония</h3>
+                        <p><strong>Вердикт:</strong> Обнаружена бактериальная пневмония.</p>
+                        <p><strong>Рекомендация:</strong> ...</p>
+                    `;
+                    break;
+            }
+
+            if (res.heatmap_image) {
+                heatmapImg.style.display = 'flex';
+                heatmapImg.src = `data:${res.heatmap_image.mime};base64,${res.heatmap_image.base64}`;
+            } else {
+                heatmapImg.style.display = 'none';
+            }
 
             modal.style.display = 'block';
-        }, 1500);
+        });
 
         // Закрытие модалки
         document.querySelector('.close-modal').addEventListener('click', () => {
