@@ -79,58 +79,64 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        analyzeBtn.disabled = true;
-        analyzeBtn.textContent = 'Анализ...';
+        analyzeBtn.style.display = 'none';
         document.getElementById('loading').style.display = 'block';
 
         const data = new FormData();
         data.append('image', fileInput.files[0]);
         fetch('/api/analyze', {
             method: 'POST',
-            body: data
-        }).then(res => res.json()).then(res => {
-            document.getElementById('loading').style.display = 'none';
-            analyzeBtn.disabled = false;
-            analyzeBtn.textContent = 'Начать диагностику';
+            body: data,
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                document.getElementById('loading').style.display = 'none';
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Начать диагностику';
 
-            // Открываем модальное окно
-            const modal = document.getElementById('result-modal');
-            const modalText = document.getElementById('modal-result-text');
-            const heatmapImg = document.getElementById('heatmap-image');
+                // Открываем модальное окно
+                const modal = document.getElementById('result-modal');
+                const modalText = document.getElementById('modal-result-text');
+                const heatmapImg = document.getElementById('heatmap-image');
 
-            switch (res.diagnosis) {
-                case 'normal':
-                    modalText.innerHTML = `
+                switch (res.diagnosis) {
+                    case 'normal':
+                        modalText.innerHTML = `
                         <h3>Всё в норме!</h3>
                         <p><strong>Вердикт:</strong> Признаков пневмонии не обнаружено.</p>
-                        <p><strong>Рекомендация:</strong> Дополнительное обследование не требуется. Можно быть спокойным!</p>
+                        <p><strong>Рекомендация:</strong> Лёгкие выглядят чистыми. Дополнительное обследование не требуется. 
+                        Продолжайте вести здоровый образ жизни, при появлении симптомов (кашель, температура, одышка) — обращайтесь к врачу.</p>
                     `;
-                    break;
-                case 'viral_pneumonia':
-                    modalText.innerHTML = `
+                        break;
+                    case 'viral_pneumonia':
+                        modalText.innerHTML = `
                         <h3>Вирусная пневмония</h3>
                         <p><strong>Вердикт:</strong> Обнаружена вирусная пневмония.</p>
-                        <p><strong>Рекомендация:</strong> ...</p>
+                        <p><strong>Рекомендация:</strong> Срочно обратитесь к врачу. 
+                        Вирусная пневмония часто требует противовирусной терапии, симптоматического лечения и наблюдения. 
+                        Не занимайтесь самолечением — важно начать правильную терапию как можно раньше.</p>
                     `;
-                    break;
-                case 'bacterial_pneumonia':
-                    modalText.innerHTML = `
+                        break;
+                    case 'bacterial_pneumonia':
+                        modalText.innerHTML = `
                         <h3>Бактериальная пневмония</h3>
                         <p><strong>Вердикт:</strong> Обнаружена бактериальная пневмония.</p>
-                        <p><strong>Рекомендация:</strong> ...</p>
+                        <p><strong>Рекомендация:</strong> Это состояние требует немедленного обращения к врачу! 
+                        Обычно назначаются антибиотики, иногда — госпитализация. 
+                        Не откладывайте визит — бактериальная пневмония может быстро прогрессировать.</p>
                     `;
-                    break;
-            }
+                        break;
+                }
 
-            if (res.heatmap_image) {
-                heatmapImg.style.display = 'flex';
-                heatmapImg.src = `data:${res.heatmap_image.mime};base64,${res.heatmap_image.base64}`;
-            } else {
-                heatmapImg.style.display = 'none';
-            }
+                if (res.heatmap_image) {
+                    heatmapImg.style.display = 'flex';
+                    heatmapImg.src = `data:${res.heatmap_image.mime};base64,${res.heatmap_image.base64}`;
+                } else {
+                    heatmapImg.style.display = 'none';
+                }
 
-            modal.style.display = 'block';
-        });
+                modal.style.display = 'block';
+            });
 
         // Закрытие модалки
         document.querySelector('.close-modal').addEventListener('click', () => {
@@ -177,5 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.image-preview').style.display = 'none';
         fileInput.value = '';
         uploadBtn.innerHTML = defaultUploadBtnHTML;
+        analyzeBtn.style.display = 'block';
     });
 });
